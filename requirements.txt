@@ -1,0 +1,3 @@
+streamlit==1.42.0
+huggingface-hub==0.28.1
+astrapy==1.5.2
