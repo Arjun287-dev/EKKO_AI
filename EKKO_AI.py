@@ -3,13 +3,14 @@ from huggingface_hub import InferenceClient
 from astrapy.db import AstraDB
 import uuid
 from datetime import datetime
+import hashlib
 
 USER_AVATAR = "👤"
 BOT_AVATAR = "🤖"
 
-HUGGINGFACE_API_KEY = "API_KEY"
+HUGGINGFACE_API_KEY = "API_KEy"
 ASTRA_DB_TOKEN = "API_KEY"
-ASTRA_DB_ENDPOINT = "ENDPOINT"
+ASTRA_DB_ENDPOINT = "API_KEY"
 
 def initialize_services():
     db = AstraDB(token=ASTRA_DB_TOKEN, api_endpoint=ASTRA_DB_ENDPOINT)
@@ -50,9 +51,10 @@ initialize_session_state()
 
 #User creation with email, username, password
 def create_user(email, username, password):
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
     user_doc = {
         "_id": str(uuid.uuid4()), "email": email, 
-        "username": username, "password": password,
+        "username": username, "password": hashed_password,
         "created_at": datetime.now().isoformat()
     }#format of the user storage in the database
     users_collection.insert_one(user_doc)#insert the user document into the users collection
@@ -60,6 +62,7 @@ def create_user(email, username, password):
 
 #User verification with email and password
 def verify_user(email, password):
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
     try:
         user = users_collection.find_one({"email": email}) #find the user document in the users collection
 
@@ -69,7 +72,7 @@ def verify_user(email, password):
             
         user_data = user['data']['document']#get the user data from the user document
             
-        if user_data['password'] != password:
+        if user_data['password'] != hashed_password:
             st.error("Incorrect password. Please try again.")#if the password is incorrect 
             return None
             
