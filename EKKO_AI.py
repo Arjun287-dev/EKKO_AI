@@ -203,7 +203,19 @@ def query_huggingface(context, question):
             messages=messages, 
             max_tokens=1000
         )
-        return completion.choices[0].message['content'].strip()
+        
+        # Get the raw response
+        raw_response = completion.choices[0].message['content'].strip()
+        
+        # Extract just the final answer if it contains reasoning
+        if "</think>" in raw_response:
+            # If response has a thinking section, extract only what comes after it
+            final_answer = raw_response.split("</think>")[-1].strip()
+        else:
+            # Otherwise use the full response
+            final_answer = raw_response
+            
+        return final_answer
     except Exception as e:
         st.error(f"Error: {e}")
         return "Sorry, I'm having trouble thinking right now. My brain cells are on strike! Please try again."
